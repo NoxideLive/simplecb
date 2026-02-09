@@ -916,7 +916,7 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 		growrate = town.Grow(this.growmech); //grow grow grow, or not
 	}
 
-	//bad service
+	//sync growth rate for normal mode
 	if(this.growmech == Growth.GROW_NORMAL) {
 		if(town.growing) {
 			GSTown.SetGrowthRate(town.id, GSTown.TOWN_GROWTH_NORMAL);
