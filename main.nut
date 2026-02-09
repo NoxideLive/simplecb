@@ -695,28 +695,38 @@ function SimpletonCB::PrepareTown(townid) {
 
 /* start monitoring town once claimed */
 function SimpletonCB::StartTownMonitor(companyid, townid) {
-	if (companyid == GSCompany.COMPANY_INVALID || !GSTown.IsValidTown(townid)) {
+	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
 
-	foreach(cargo in this.CBcargo) {
-		GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, true); //return value is not important
-		if(cargo.self) {
-			GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, true);
+	foreach(company in this.companies) {
+		if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+			continue;
+		}
+		foreach(cargo in this.CBcargo) {
+			GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, true); //return value is not important
+			if(cargo.self) {
+				GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, true);
+			}
 		}
 	}
 }
 
 /* stop monitoring town if unclaimed */
 function SimpletonCB::StopTownMonitor(companyid, townid) {
-	if (companyid == GSCompany.COMPANY_INVALID || !GSTown.IsValidTown(townid)) {
+	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
 
-	foreach(cargo in this.CBcargo) {
-		GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, false);
-		if(cargo.self) {
-			GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, false);
+	foreach(company in this.companies) {
+		if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+			continue;
+		}
+		foreach(cargo in this.CBcargo) {
+			GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, false);
+			if(cargo.self) {
+				GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, false);
+			}
 		}
 	}
 }
@@ -817,11 +827,26 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 
 	/* MONTHLY DELIVERY CHECK */
 	foreach(cargo in this.CBcargo) {
-		delivered = GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, true); //deliver since last check
+		delivered = 0;
+		pickup = 0;
+		foreach(company in this.companies) {
+			if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+				continue;
+			}
+			local cargo_delivered = GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, true); //deliver since last check
+			if(cargo_delivered > 0) {
+				delivered += cargo_delivered;
+			}
+			if(cargo.self) {
+				local cargo_pickup = GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, true);
+				if(cargo_pickup > 0) {
+					pickup += cargo_pickup;
+				}
+			}
+		}
 
 		//when passenger or mail class, get pickup from within town and substract it from delivery
 		if(cargo.self) {
-			pickup = GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, true);
 			//if cargo is picked up in claimed town and delivered to another town, it could increase requirements
 			//to prevent that, do not allow negative values, but delivering elsewhere can still go against valid deliveries
 			delivered = max(delivered - pickup, 0);
