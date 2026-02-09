@@ -142,6 +142,6 @@ function SimpletonCB::Load(version, tbl) {
 	this.from_save = true;
 
 	foreach(town in this.townlistCB){
-		this.StartTownMonitor(town.owner, town.id); //start accepting cargo
+		this.StartTownMonitor(town.id); //start accepting cargo
 	}
 }

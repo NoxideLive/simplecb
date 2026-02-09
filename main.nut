@@ -468,7 +468,7 @@ function SimpletonCB::HQClaimTown() {
 
 				company.town_id = closest_town_id; //claim town
 				this.townlistCB.append( Town(company.town_id, company.id) ); //add to pool
-				this.StartTownMonitor(company.id, company.town_id); //start accepting cargo
+				this.StartTownMonitor(company.town_id); //start accepting cargo
 				
 				if(this.townarea > 0) {
 				  local town_location = GSTown.GetLocation(company.town_id);
@@ -553,7 +553,7 @@ function SimpletonCB::TownRemoveByID(townid) {
 	for(local i = 0, size = this.townlistCB.len(); i < size; i++) {
 		if(this.townlistCB[i].id == townid) {
 			GSTown.SetText(townid, GSText(GSText.STR_EMPTY0));
-			this.StopTownMonitor(this.townlistCB[i].owner, this.townlistCB[i].id);
+			this.StopTownMonitor(this.townlistCB[i].id);
 			local town_location = GSTown.GetLocation(this.townlistCB[i].id);
 			GSTown.SetName(townid, null);
 			if(this.townarea) {
@@ -694,7 +694,7 @@ function SimpletonCB::PrepareTown(townid) {
 }
 
 /* start monitoring town once claimed */
-function SimpletonCB::StartTownMonitor(companyid, townid) {
+function SimpletonCB::StartTownMonitor(townid) {
 	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
@@ -713,7 +713,7 @@ function SimpletonCB::StartTownMonitor(companyid, townid) {
 }
 
 /* stop monitoring town if unclaimed */
-function SimpletonCB::StopTownMonitor(companyid, townid) {
+function SimpletonCB::StopTownMonitor(townid) {
 	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
@@ -834,14 +834,10 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 				continue;
 			}
 			local cargo_delivered = GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, true); //deliver since last check
-			if(cargo_delivered > 0) {
-				delivered += cargo_delivered;
-			}
+			delivered += cargo_delivered;
 			if(cargo.self) {
 				local cargo_pickup = GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, true);
-				if(cargo_pickup > 0) {
-					pickup += cargo_pickup;
-				}
+				pickup += cargo_pickup;
 			}
 		}
 
