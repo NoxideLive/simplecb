@@ -881,6 +881,7 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 			}
 			else {
 				txt = GSText.STR_TOWN_CARGO_GOOD; //if all delivered, show OK
+				missing = GSText(GSText.STR_EMPTY0);
 			}
 
 			if(cargoSize <= TOWNGUI_LIMIT) { //if more, skip - will not fit in town gui
