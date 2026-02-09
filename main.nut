@@ -875,17 +875,18 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 		//town gui
 		if(townpop >= cargo.from) { //if cargo is required
 			missing = max(req - (town.delivered[cargo.id] + town.storage[cargo.id]), 0); //how much cargo is missing to satisfy town
+			local status_param = missing;
 			
 			if(missing > 0) {
 				txt = GSText.STR_TOWN_CARGO_YES; //if still missing
 			}
 			else {
 				txt = GSText.STR_TOWN_CARGO_GOOD; //if all delivered, show OK
-				missing = GSText(GSText.STR_EMPTY0);
+				status_param = GSText(GSText.STR_EMPTY0);
 			}
 
 			if(cargoSize <= TOWNGUI_LIMIT) { //if more, skip - will not fit in town gui
-				towngui.append(GSText(txt, 1 << cargo.id, missing));
+				towngui.append(GSText(txt, 1 << cargo.id, status_param));
 			}
 		}
 	}
