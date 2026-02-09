@@ -917,7 +917,18 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	}
 
 	//bad service
-	if(growrate == GSTown.TOWN_GROWTH_NONE && town.supplied == true) {
+	if(this.growmech == Growth.GROW_NORMAL) {
+		if(town.growing) {
+			GSTown.SetGrowthRate(town.id, GSTown.TOWN_GROWTH_NORMAL);
+		}
+		else {
+			GSTown.SetGrowthRate(town.id, GSTown.TOWN_GROWTH_NONE);
+		}
+		growrate = GSTown.GetGrowthRate(town.id);
+	}
+
+	//bad service
+	if(this.growmech == Growth.GROW_EXPAND && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied == true) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;
