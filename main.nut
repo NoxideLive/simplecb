@@ -127,6 +127,7 @@ class SimpletonCB extends GSController
 
 //script start
 function SimpletonCB::Start() {
+	scriptInstance = this;
 	this.Log("### Simpleton city Builder STARTS ###");
 	/* load settings */
 	this.log = GSController.GetSetting("morelogs");
@@ -933,8 +934,8 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	}
 
 	//bad service
-	local check_service = this.growmech == Growth.GROW_EXPAND && !this.ignoreservice;
-	if(check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
+	local should_check_service = this.growmech == Growth.GROW_EXPAND && !this.ignoreservice;
+	if(should_check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;
