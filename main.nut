@@ -933,7 +933,7 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 
 	//bad service
 	local check_service = this.growmech == Growth.GROW_EXPAND && !this.ignoreservice;
-	if(check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
+	if(check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied == true) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;

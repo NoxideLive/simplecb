@@ -153,7 +153,7 @@ function Town::Service(){
 	local vstate;
 	foreach(stid, _ in stlist){ //cycle through stations
 		if(service >= TOWN_SERVICE_MAX) {
-			break; //we dont need more than 5
+			break; //we dont need more than max service
 		}
 		//is station ours and is close to town centre?
 		if(GSStation.IsValidStation(stid) && GSStation.GetOwner(stid) == this.owner
