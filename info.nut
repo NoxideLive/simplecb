@@ -147,6 +147,16 @@ class SimpletonCBInfo extends GSInfo {
 		AddLabels(
 			"growmechanism", {_0 = "Normal", _1 = "Expand"} //, _2 = "diversified"
 		);
+
+		AddSetting({
+			name = "ignoreservice",
+			description = "Ignore transport service requirement for town growth (forces Expand growth). Set 0 to require service.",
+			easy_value = 0,
+			medium_value = 0,
+			hard_value = 0,
+			custom_value = 0,
+			flags = CONFIG_BOOLEAN | CONFIG_INGAME
+		});
 		
 		AddSetting({
 			name = "townshrink",

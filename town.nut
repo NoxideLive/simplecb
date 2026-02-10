@@ -142,6 +142,9 @@ function Town::Grow(growmech){
 }
 
 function Town::Service(){
+	if(GSController.GetSetting("ignoreservice")) {
+		return 5;
+	}
 	local stlist = GSStationList(GSStation.STATION_ANY);
 	local service = 0; //serviced stations of our town
 	local vstate;
