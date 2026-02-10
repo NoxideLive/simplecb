@@ -43,7 +43,7 @@ Novapolis team, https://www.novapolis.net
 	- Expand - Similar to Normal, but uses own mechanism, GS places houses instead of OpenTTD. Requires transport service and cargo to grow town
 
 =Ignore transport service requirement for town growth
- - When enabled, town growth uses the Expand mechanism and does not require a station/service to grow
+ - When enabled, town growth uses the Expand mechanism and does not require a station/service to grow (Normal will be treated as Expand)
 
 =Town will shrink slightly when not supplied
 	Town will shrink when not properly supplied.

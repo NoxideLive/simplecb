@@ -653,7 +653,7 @@ function SimpletonCB::PrepareCB() {
 	if(this.growmech < Growth.GROW_NORMAL || this.growmech >= Growth.GROW_END) {
 		this.growmech = Growth.GROW_NORMAL;
 	}
-	if(this.ignore_service && this.growmech == Growth.GROW_NORMAL) {
+	if(this.ignore_service == 1 && this.growmech == Growth.GROW_NORMAL) {
 		this.growmech = Growth.GROW_EXPAND;
 	}
 
