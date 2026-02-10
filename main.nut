@@ -5,8 +5,6 @@
 
 require("town.nut");
 require("classes.nut");
-
-scriptInstance <- null;
 const SCRIPT_VERSION = 16; //the same as in info.nut. For save/load
 const NUMCARGO = 64; //number of cargos in OpenTTD
 const INVALID_TOWN = 0xFFFF; //invalid town id
@@ -71,6 +69,7 @@ class SimpletonCB extends GSController
 	CBcargo = []; //required cargos pool
 	townlistCB = []; //owned towns pool
 	growmech = 0;
+	ignoreservice = 0;
 	townshrink = false;
 	claim_pop = 250;
 	max_storage = 4;
@@ -467,8 +466,10 @@ function SimpletonCB::HQClaimTown() {
 				}
 
 				company.town_id = closest_town_id; //claim town
-				this.townlistCB.append( Town(company.town_id, company.id) ); //add to pool
-				this.StartTownMonitor(company.id, company.town_id); //start accepting cargo
+				local new_town = Town(company.town_id, company.id); //add to pool
+				new_town.ignoreservice = this.ignoreservice;
+				this.townlistCB.append(new_town);
+				this.StartTownMonitor(company.town_id); //start accepting cargo
 				
 				if(this.townarea > 0) {
 				  local town_location = GSTown.GetLocation(company.town_id);
@@ -553,7 +554,7 @@ function SimpletonCB::TownRemoveByID(townid) {
 	for(local i = 0, size = this.townlistCB.len(); i < size; i++) {
 		if(this.townlistCB[i].id == townid) {
 			GSTown.SetText(townid, GSText(GSText.STR_EMPTY0));
-			this.StopTownMonitor(this.townlistCB[i].owner, this.townlistCB[i].id);
+			this.StopTownMonitor(this.townlistCB[i].id);
 			local town_location = GSTown.GetLocation(this.townlistCB[i].id);
 			GSTown.SetName(townid, null);
 			if(this.townarea) {
@@ -643,6 +644,7 @@ function SimpletonCB::PrepareCB() {
 	this.townarea     = GSController.GetSetting("townarea");
 	this.townstring   = GSController.GetSetting("changetownname");
 	this.growmech     = GSController.GetSetting("growmechanism");
+	this.ignoreservice = GSController.GetSetting("ignoreservice");
 	this.townshrink   = GSController.GetSetting("townshrink");
 	this.dyn_growth   = GSController.GetSetting("dyngrowth");
 	this.goalprogress = GSController.GetSetting("goalprogress");
@@ -650,6 +652,13 @@ function SimpletonCB::PrepareCB() {
 
 	if(this.growmech < Growth.GROW_NORMAL || this.growmech >= Growth.GROW_END) {
 		this.growmech = Growth.GROW_NORMAL;
+	}
+	if(this.ignoreservice && this.growmech == Growth.GROW_NORMAL) {
+		//ignore service overrides normal mode to bypass OpenTTD service checks
+		this.growmech = Growth.GROW_EXPAND;
+	}
+	foreach(town in this.townlistCB) {
+		town.ignoreservice = this.ignoreservice;
 	}
 
 	//adjust some game settings
@@ -694,29 +703,39 @@ function SimpletonCB::PrepareTown(townid) {
 }
 
 /* start monitoring town once claimed */
-function SimpletonCB::StartTownMonitor(companyid, townid) {
-	if (companyid == GSCompany.COMPANY_INVALID || !GSTown.IsValidTown(townid)) {
+function SimpletonCB::StartTownMonitor(townid) {
+	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
 
-	foreach(cargo in this.CBcargo) {
-		GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, true); //return value is not important
-		if(cargo.self) {
-			GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, true);
+	foreach(company in this.companies) {
+		if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+			continue;
+		}
+		foreach(cargo in this.CBcargo) {
+			GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, true); //return value is not important
+			if(cargo.self) {
+				GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, true);
+			}
 		}
 	}
 }
 
 /* stop monitoring town if unclaimed */
-function SimpletonCB::StopTownMonitor(companyid, townid) {
-	if (companyid == GSCompany.COMPANY_INVALID || !GSTown.IsValidTown(townid)) {
+function SimpletonCB::StopTownMonitor(townid) {
+	if (!GSTown.IsValidTown(townid)) {
 		return;
 	}
 
-	foreach(cargo in this.CBcargo) {
-		GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, false);
-		if(cargo.self) {
-			GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, false);
+	foreach(company in this.companies) {
+		if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+			continue;
+		}
+		foreach(cargo in this.CBcargo) {
+			GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, false);
+			if(cargo.self) {
+				GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, false);
+			}
 		}
 	}
 }
@@ -817,11 +836,22 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 
 	/* MONTHLY DELIVERY CHECK */
 	foreach(cargo in this.CBcargo) {
-		delivered = GSCargoMonitor.GetTownDeliveryAmount(companyid, cargo.id, townid, true); //deliver since last check
+		delivered = 0;
+		pickup = 0;
+		foreach(company in this.companies) {
+			if(GSCompany.ResolveCompanyID(company.id) == GSCompany.COMPANY_INVALID) {
+				continue;
+			}
+			local cargo_delivered = GSCargoMonitor.GetTownDeliveryAmount(company.id, cargo.id, townid, true); //deliver since last check
+			delivered += cargo_delivered;
+			if(cargo.self) {
+				local cargo_pickup = GSCargoMonitor.GetTownPickupAmount(company.id, cargo.id, townid, true);
+				pickup += cargo_pickup;
+			}
+		}
 
 		//when passenger or mail class, get pickup from within town and substract it from delivery
 		if(cargo.self) {
-			pickup = GSCargoMonitor.GetTownPickupAmount(companyid, cargo.id, townid, true);
 			//if cargo is picked up in claimed town and delivered to another town, it could increase requirements
 			//to prevent that, do not allow negative values, but delivering elsewhere can still go against valid deliveries
 			delivered = max(delivered - pickup, 0);
@@ -875,16 +905,18 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 		//town gui
 		if(townpop >= cargo.from) { //if cargo is required
 			missing = max(req - (town.delivered[cargo.id] + town.storage[cargo.id]), 0); //how much cargo is missing to satisfy town
+			local status_param = missing;
 			
 			if(missing > 0) {
 				txt = GSText.STR_TOWN_CARGO_YES; //if still missing
 			}
 			else {
 				txt = GSText.STR_TOWN_CARGO_GOOD; //if all delivered, show OK
+				status_param = GSText(GSText.STR_EMPTY0);
 			}
 
 			if(cargoSize <= TOWNGUI_LIMIT) { //if more, skip - will not fit in town gui
-				towngui.append(GSText(txt, 1 << cargo.id, missing));
+				towngui.append(GSText(txt, 1 << cargo.id, status_param));
 			}
 		}
 	}
@@ -893,8 +925,20 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 		growrate = town.Grow(this.growmech); //grow grow grow, or not
 	}
 
+	//sync growth rate for normal mode
+	if(this.growmech == Growth.GROW_NORMAL) {
+		if(town.growing) {
+			GSTown.SetGrowthRate(town.id, GSTown.TOWN_GROWTH_NORMAL);
+		}
+		else {
+			GSTown.SetGrowthRate(town.id, GSTown.TOWN_GROWTH_NONE);
+		}
+		growrate = GSTown.GetGrowthRate(town.id);
+	}
+
 	//bad service
-	if(growrate == GSTown.TOWN_GROWTH_NONE && town.supplied == true) {
+	local check_service = this.growmech == Growth.GROW_EXPAND && !this.ignoreservice;
+	if(check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;

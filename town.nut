@@ -2,6 +2,7 @@
 	Simpleton City Builder   town.nut
 	Town class - town pool of claimed towns
 */
+const TOWN_SERVICE_MAX = 5;
 
 class Town
 {
@@ -18,13 +19,14 @@ class Town
 	delivered = [];
 	missing = 0; //mask of missing cargos
 	service = false; //has town transport service?
+	ignoreservice = false; //ignore transport service requirement?
 
-	notgrowinrow = 0; //consecutive months when town did not grew
-	growinrow = 0; //consecutive months when town did grew
-	growtotal = 0; //total months when town did grew
+	notgrowinrow = 0; //consecutive months when town did not grow
+	growinrow = 0; //consecutive months when town did grow
+	growtotal = 0; //total months when town did grow
 	monthstotal = 0; //total months in game
-	prevgrowed = false; //did town grew last month?
-	funddur = 0;  //duratio nof funding buildings
+	prevgrowed = false; //did town grow last month?
+	funddur = 0;  //duration of funding buildings
 	fundedtotal = 0; //total funded months
 	
 	growth_last = NO_GROWTH; //last growth when town was growing
@@ -51,6 +53,7 @@ class Town
 
 		this.missing = 0;
 		this.service = false;
+		this.ignoreservice = false;
 		this.grow_counter = 320;
 		this.growing = false;
 		this.supplied = false;
@@ -142,12 +145,15 @@ function Town::Grow(growmech){
 }
 
 function Town::Service(){
+	if(this.ignoreservice) {
+		return TOWN_SERVICE_MAX;
+	}
 	local stlist = GSStationList(GSStation.STATION_ANY);
 	local service = 0; //serviced stations of our town
 	local vstate;
 	foreach(stid, _ in stlist){ //cycle through stations
-		if(service >= 5) {
-			break; //we dont need more than 5
+		if(service >= TOWN_SERVICE_MAX) {
+			break; //we dont need more than max service
 		}
 		//is station ours and is close to town centre?
 		if(GSStation.IsValidStation(stid) && GSStation.GetOwner(stid) == this.owner
