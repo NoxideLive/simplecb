@@ -71,7 +71,7 @@ class SimpletonCB extends GSController
 	CBcargo = []; //required cargos pool
 	townlistCB = []; //owned towns pool
 	growmech = 0;
-	ignore_service = 0;
+	ignoreservice = 0;
 	townshrink = false;
 	claim_pop = 250;
 	max_storage = 4;
@@ -644,7 +644,7 @@ function SimpletonCB::PrepareCB() {
 	this.townarea     = GSController.GetSetting("townarea");
 	this.townstring   = GSController.GetSetting("changetownname");
 	this.growmech     = GSController.GetSetting("growmechanism");
-	this.ignore_service = GSController.GetSetting("ignoreservice");
+	this.ignoreservice = GSController.GetSetting("ignoreservice");
 	this.townshrink   = GSController.GetSetting("townshrink");
 	this.dyn_growth   = GSController.GetSetting("dyngrowth");
 	this.goalprogress = GSController.GetSetting("goalprogress");
@@ -653,7 +653,7 @@ function SimpletonCB::PrepareCB() {
 	if(this.growmech < Growth.GROW_NORMAL || this.growmech >= Growth.GROW_END) {
 		this.growmech = Growth.GROW_NORMAL;
 	}
-	if(this.ignore_service && this.growmech == Growth.GROW_NORMAL) {
+	if(this.ignoreservice && this.growmech == Growth.GROW_NORMAL) {
 		this.growmech = Growth.GROW_EXPAND;
 	}
 
@@ -933,7 +933,8 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	}
 
 	//bad service
-	if(this.growmech == Growth.GROW_EXPAND && !this.ignore_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
+	local check_service = this.growmech == Growth.GROW_EXPAND && !this.ignoreservice;
+	if(check_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;
