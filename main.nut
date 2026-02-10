@@ -653,7 +653,7 @@ function SimpletonCB::PrepareCB() {
 	if(this.growmech < Growth.GROW_NORMAL || this.growmech >= Growth.GROW_END) {
 		this.growmech = Growth.GROW_NORMAL;
 	}
-	if(this.ignore_service == 1 && this.growmech == Growth.GROW_NORMAL) {
+	if(this.ignore_service && this.growmech == Growth.GROW_NORMAL) {
 		this.growmech = Growth.GROW_EXPAND;
 	}
 
@@ -933,7 +933,7 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	}
 
 	//bad service
-	if(this.growmech == Growth.GROW_EXPAND && this.ignore_service == 0 && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied == true) {
+	if(this.growmech == Growth.GROW_EXPAND && !this.ignore_service && growrate == GSTown.TOWN_GROWTH_NONE && town.supplied) {
 		//Log("service");
 		town.growing = false;
 		town.service = false;
