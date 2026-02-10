@@ -85,6 +85,7 @@ class SimpletonCB extends GSController
 
 	constructor()
 	{
+		scriptInstance = this;
 		this.scorelist = GSList();
 		this.signlist = GSList();
 		//                Settlement  Resort Village Town   City  Metropolis
@@ -127,7 +128,6 @@ class SimpletonCB extends GSController
 
 //script start
 function SimpletonCB::Start() {
-	scriptInstance = this;
 	this.Log("### Simpleton city Builder STARTS ###");
 	/* load settings */
 	this.log = GSController.GetSetting("morelogs");

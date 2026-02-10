@@ -142,7 +142,7 @@ function Town::Grow(growmech){
 }
 
 function Town::Service(){
-	if(scriptInstance != null && scriptInstance.ignoreservice) {
+	if(scriptInstance.ignoreservice) {
 		return 5;
 	}
 	local stlist = GSStationList(GSStation.STATION_ANY);
