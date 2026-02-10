@@ -5,8 +5,6 @@
 
 require("town.nut");
 require("classes.nut");
-
-scriptInstance <- null;
 const SCRIPT_VERSION = 16; //the same as in info.nut. For save/load
 const NUMCARGO = 64; //number of cargos in OpenTTD
 const INVALID_TOWN = 0xFFFF; //invalid town id
@@ -85,7 +83,6 @@ class SimpletonCB extends GSController
 
 	constructor()
 	{
-		scriptInstance = this;
 		this.scorelist = GSList();
 		this.signlist = GSList();
 		//                Settlement  Resort Village Town   City  Metropolis
@@ -785,6 +782,7 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	if(!town) {
 		return;
 	}
+	town.ignoreservice = this.ignoreservice;
 
 	local townpop = GSTown.GetPopulation(townid);
 	local delivered = 0, missing = 0, req = 0, goal_id, act_cargo, missing_cargo = 0, txt, towngui = [], deltadays, service_good = true, grow_ratio = 0;
