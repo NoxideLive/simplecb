@@ -466,7 +466,9 @@ function SimpletonCB::HQClaimTown() {
 				}
 
 				company.town_id = closest_town_id; //claim town
-				this.townlistCB.append( Town(company.town_id, company.id) ); //add to pool
+				local new_town = Town(company.town_id, company.id); //add to pool
+				new_town.ignoreservice = this.ignoreservice;
+				this.townlistCB.append(new_town);
 				this.StartTownMonitor(company.town_id); //start accepting cargo
 				
 				if(this.townarea > 0) {
@@ -655,6 +657,9 @@ function SimpletonCB::PrepareCB() {
 		//ignore service overrides normal mode to bypass OpenTTD service checks
 		this.growmech = Growth.GROW_EXPAND;
 	}
+	foreach(town in this.townlistCB) {
+		town.ignoreservice = this.ignoreservice;
+	}
 
 	//adjust some game settings
 	//disable this stupid feature
@@ -783,7 +788,6 @@ function SimpletonCB::TownUpdate(companyid, townid, update) {
 	if(!town) {
 		return;
 	}
-	town.ignoreservice = this.ignoreservice;
 
 	local townpop = GSTown.GetPopulation(townid);
 	local delivered = 0, missing = 0, req = 0, goal_id, act_cargo, missing_cargo = 0, txt, towngui = [], deltadays, service_good = true, grow_ratio = 0;
