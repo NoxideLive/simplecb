@@ -21,11 +21,11 @@ class Town
 	service = false; //has town transport service?
 	ignoreservice = false; //ignore transport service requirement?
 
-	notgrowinrow = 0; //consecutive months when town did not grew
-	growinrow = 0; //consecutive months when town did grew
-	growtotal = 0; //total months when town did grew
+	notgrowinrow = 0; //consecutive months when town did not grow
+	growinrow = 0; //consecutive months when town did grow
+	growtotal = 0; //total months when town did grow
 	monthstotal = 0; //total months in game
-	prevgrowed = false; //did town grew last month?
+	prevgrowed = false; //did town grow last month?
 	funddur = 0;  //duratio nof funding buildings
 	fundedtotal = 0; //total funded months
 	
