@@ -652,7 +652,7 @@ function SimpletonCB::PrepareCB() {
 		this.growmech = Growth.GROW_NORMAL;
 	}
 	if(this.ignoreservice && this.growmech == Growth.GROW_NORMAL) {
-		//ignore service forces expand growth even when normal is selected
+		//ignore service overrides normal mode to bypass OpenTTD service checks
 		this.growmech = Growth.GROW_EXPAND;
 	}
 

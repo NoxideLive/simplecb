@@ -26,7 +26,7 @@ class Town
 	growtotal = 0; //total months when town did grow
 	monthstotal = 0; //total months in game
 	prevgrowed = false; //did town grow last month?
-	funddur = 0;  //duratio nof funding buildings
+	funddur = 0;  //duration of funding buildings
 	fundedtotal = 0; //total funded months
 	
 	growth_last = NO_GROWTH; //last growth when town was growing
